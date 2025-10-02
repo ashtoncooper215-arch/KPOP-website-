@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>K-POP Concert Website</title>
+  <style>
+    /* ===== Global Styles ===== */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(-45deg, #ff4081, #7b2ff7, #00c9ff, #92fe9d);
+      background-size: 400% 400%;
+      animation: gradientShift 20s ease infinite;
+      color: #fff;
+      padding-top: 100px;
+      overflow-x: hidden;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    body.light-mode {
+      background: linear-gradient(-45deg, #ffe29f, #ffa99f, #ff719a, #fbc2eb);
+      color: #111;
+    }
+
+    /* ===== Sticky Search Bar ===== */
+    .search-section {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: #121212;
+      padding: 1rem 0;
+      border-bottom: 2px solid #ff4081;
+      text-align: center;
+    }
+
+    body.light-mode .search-section {
+      background: #fff;
+      border-bottom: 2px solid #ff4081;
+    }
+
+    #searchInput {
+      width: 60%;
+      max-width: 350px;
+      padding: 0.7rem;
+      font-size: 1rem;
+      border: 2px solid #ff4081;
+      border-radius: 8px;
+      background: #1a1a1a;
+      color: #fff;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    #searchInput:focus {
+      width: 80%;
+      max-width: 500px;
+      border-color: #e73370;
+      background: #222;
+      box-shadow: 0 0 10px rgba(255, 64, 129, 0.6);
+    }
+
+    body.light-mode #searchInput {
+      background: #fff;
+      color: #111;
+      border-color: #ff4081;
+    }
+
+    body.light-mode #searchInput:focus {
+      background: #fdfdfd;
+      border-color: #e73370;
+    }
+
+    #searchInput::placeholder {
+      color: #aaa;
+      transition: color 0.3s ease;
+    }
+    #searchInput:focus::placeholder {
+      color: #ff4081;
+    }
+
+    /* ===== Suggestions Dropdown ===== */
+    #suggestions {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%) translateY(-10px);
+      width: 80%;
+      max-width: 400px;
+      background: #1b1b1b;
+      border-radius: 8px;
+      margin-top: 0.2rem;
+      z-index: 1100;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+    }
+
+    #suggestions.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+
+    .suggestion-item {
+      padding: 0.7rem;
+      cursor: pointer;
+      border-bottom: 1px solid #333;
+      color: #eee;
+    }
+
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+
+    .suggestion-item:hover,
+    .suggestion-item.active {
+      background: #ff4081;
+      color: #fff;
+    }
+
+    body.light-mode #suggestions {
+      background: #fff;
+      border: 1px solid #ccc;
+      color: #111;
+    }
+
+    /* ===== Artists Grid ===== */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .card {
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(6px);
+      border-radius: 12px;
+      text-align: center;
+      padding: 1rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 20px rgba(255, 64, 129, 0.6);
+    }
+
+    body.light-mode .card {
+      background: rgba(255, 255, 255, 0.7);
+      color: #111;
+    }
+
+    /* ===== Floating Lightsticks ===== */
+    #lightstick-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .lightstick {
+      position: absolute;
+      font-size: 2rem;
+      animation: floatUp 8s linear infinite, glowShift 10s ease-in-out infinite;
+      opacity: 0.9;
+      filter: drop-shadow(0 0 8px rgba(255,255,255,0.8));
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-20vh) rotate(360deg); opacity: 0; }
+    }
+
+    @keyframes glowShift {
+      0% { color: #ff4081; text-shadow: 0 0 12px #ff4081; }
+      25% { color: #7b2ff7; text-shadow: 0 0 12px #7b2ff7; }
+      50% { color: #00c9ff; text-shadow: 0 0 12px #00c9ff; }
+      75% { color: #92fe9d; text-shadow: 0 0 12px #92fe9d; }
+      100% { color: #ff4081; text-shadow: 0 0 12px #ff4081; }
+    }
+
+    body.light-mode .lightstick {
+      animation: floatUp 8s linear infinite, glowShiftLight 10s ease-in-out infinite;
+    }
+
+    @keyframes glowShiftLight {
+      0% { color: #ff719a; text-shadow: 0 0 12px #ff719a; }
+      25% { color: #ffa99f; text-shadow: 0 0 12px #ffa99f; }
+      50% { color: #ffe29f; text-shadow: 0 0 12px #ffe29f; }
+      75% { color: #fbc2eb; text-shadow: 0 0 12px #fbc2eb; }
+      100% { color: #ff719a; text-shadow: 0 0 12px #ff719a; }
+    }
+
+    /* ===== Music Visualizer ===== */
+    #music-visualizer {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 4px;
+      width: 100%;
+      height: 100px;
+      margin-bottom: 2rem;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .visual-bar {
+      width: 6px;
+      background: #ff4081;
+      border-radius: 3px;
+      animation: bounce 0.3s linear infinite;
+    }
+
+    body.light-mode .visual-bar {
+      background: #ff719a;
+    }
+
+    @keyframes bounce {
+      0% { height: 10px; }
+      50% { height: 80px; }
+      100% { height: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== Search Section ===== -->
+  <div class="search-section">
+    <input type="text" id="searchInput" placeholder="Search BTS...">
+    <div id="suggestions"></div>
+  </div>
+
+  <!-- ===== Music Visualizer ===== -->
+  <div id="music-visualizer"></div>
+
+  <!-- ===== Artists Grid ===== -->
+  <div class="grid" id="artistsGrid"></div>
+
+  <!-- ===== Floating Lightsticks ===== -->
+  <div id="lightstick-container"></div>
+
+  <script>
+    // ===== Groups Array (Scalable Example) =====
+    const groups = [
+      { name: "BTS", url: "bts.html" },
+      { name: "TWICE", url: "twice.html" },
+      { name: "NewJeans", url: "newjeans.html" },
+      { name: "BLACKPINK", url: "blackpink.html" },
+      { name: "Stray Kids", url: "straykids.html" },
+      { name: "EXO", url: "exo.html" },
+      { name: "SEVENTEEN", url: "seventeen.html" },
+      { name: "NCT", url: "nct.html" },
+      { name: "ITZY", url: "itzy.html" },
+      { name: "ATEEZ", url: "ateez.html" }
+      // Add more groups here, scalable
+    ];
+
+    // ===== Artists Grid Auto-Generate =====
+    const artistsGrid = document.getElementById("artistsGrid");
+    groups.forEach(group => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.textContent = group.name;
+      card.addEventListener("click", () => window.location.href = group.url);
+      artistsGrid.appendChild(card);
+    });
+
+    // ===== Search & Suggestions =====
+    const searchBox = document.getElementById("searchInput");
+    const suggestionBox = document.getElementById("suggestions");
+    let selectedIndex = -1;
+
+    searchBox.addEventListener("input", () => {
+      const query = searchBox.value.toLowerCase();
+      suggestionBox.innerHTML = "";
+      suggestionBox.classList.remove("show");
+      selectedIndex = -1;
+
+      if (!query) return;
+
+      const matches = groups.filter(g => g.name.toLowerCase().includes(query));
+      if (matches.length > 0) {
+        matches.forEach(group => {
+          const item = document.createElement("div");
+          item.className = "suggestion-item";
+          item.textContent = group.name;
+          item.dataset.url = group.url;
+          item.addEventListener("click", () => window.location.href = group.url);
+          suggestionBox.appendChild(item);
+        });
+      }
+      suggestionBox.classList.add("show");
+    });
+
+    searchBox.addEventListener("keydown", e => {
+      const items = suggestionBox.querySelectorAll(".suggestion-item");
+      if (!items.length) return;
+
+      if (e.key === "ArrowDown") {
+        selectedIndex = (selectedIndex + 1) % items.length;
+      } else if (e.key === "ArrowUp") {
+        selectedIndex = (selectedIndex - 1 + items.length) % items.length;
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (selectedIndex >= 0) window.location.href = items[selectedIndex].dataset.url;
+      }
+      items.forEach((i, idx) => i.classList.toggle("active", idx === selectedIndex));
+    });
+
+    // =====
